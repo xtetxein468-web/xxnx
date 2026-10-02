@@ -50,7 +50,7 @@
                     <span class="text-xl font-bold bg-gradient-to-r from-red-500 to-rose-400 bg-clip-text text-transparent hidden sm:inline">MyVideo App</span>
                 </div>
 
-                <!-- Search Bar (User View Only) -->
+                <!-- Search Bar -->
                 <div id="nav-search-container" class="flex-1 max-w-md mx-2 transition-opacity duration-200">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
 
-                <!-- Navigation Tabs (Admin Button Hidden for Security) -->
+                <!-- Navigation Tabs -->
                 <div class="flex items-center gap-2 sm:gap-3">
                     <button onclick="goToHome()" id="btn-tab-home" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition flex items-center gap-2 bg-red-600 text-white">
                         <i class="fa-solid fa-house"></i>
@@ -72,17 +72,17 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- ================= USER VIEW SECTION ================= -->
+        <!-- USER VIEW SECTION -->
         <section id="user-view" class="space-y-6">
             
             <!-- Category Chips -->
             <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar" id="category-bar">
-                <!-- Dynamically populated categories -->
+                <!-- Dynamic categories -->
             </div>
 
             <!-- Video Grid -->
             <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Dynamically populated video cards -->
+                <!-- Dynamic video cards -->
             </div>
 
             <!-- Empty State -->
@@ -93,9 +93,8 @@
             </div>
         </section>
 
-        <!-- ================= ADMIN VIEW SECTION (HIDDEN BY DEFAULT) ================= -->
+        <!-- ADMIN VIEW SECTION (HIDDEN BY DEFAULT) -->
         <section id="admin-view" class="hidden space-y-8">
-
             <div class="space-y-8">
                 <!-- Dashboard Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-700 pb-5">
@@ -168,7 +167,7 @@
                                 </tr>
                             </thead>
                             <tbody id="admin-video-table" class="divide-y divide-gray-700">
-                                <!-- Dynamically populated -->
+                                <!-- Dynamic rows -->
                             </tbody>
                         </table>
                     </div>
@@ -178,7 +177,7 @@
         </section>
     </main>
 
-    <!-- Video Player & AUTO-USER COMMENT Modal -->
+    <!-- Video Player & Reaction / Comment Modal -->
     <div id="player-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
         <div class="relative w-full max-w-4xl bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700 my-8">
             
@@ -203,6 +202,19 @@
                         </div>
                     </div>
                     <p id="player-modal-description" class="text-sm text-gray-300 leading-relaxed">Description...</p>
+
+                    <!-- VIDEO REACTION BUTTONS IN MODAL -->
+                    <div class="flex items-center gap-3 pt-3">
+                        <button id="modal-react-like" onclick="reactVideoFromModal('like')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1.5 transition">
+                            👍 <span id="modal-like-count">0</span>
+                        </button>
+                        <button id="modal-react-love" onclick="reactVideoFromModal('love')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1.5 transition">
+                            ❤️ <span id="modal-love-count">0</span>
+                        </button>
+                        <button id="modal-react-haha" onclick="reactVideoFromModal('haha')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs flex items-center gap-1.5 transition">
+                            😆 <span id="modal-haha-count">0</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- AUTO USER COMMENT SECTION -->
@@ -213,7 +225,7 @@
                         <span id="modal-comment-count" class="text-xs bg-gray-700 px-2 py-0.5 rounded-full text-gray-300">0</span>
                     </h4>
 
-                    <!-- Auto User Identity Display & Comment Form -->
+                    <!-- Comment Form -->
                     <form onsubmit="submitComment(event)" class="space-y-3 bg-gray-900/50 p-4 rounded-xl border border-gray-700/80">
                         <input type="hidden" id="active-comment-video-id">
                         
@@ -240,7 +252,7 @@
 
                     <!-- Comments List -->
                     <div id="comments-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                        <!-- Dynamic Comments Load -->
+                        <!-- Dynamic Comments -->
                     </div>
                 </div>
             </div>
@@ -310,7 +322,6 @@
     </div>
 
     <script>
-        // Secret Admin Password
         const ADMIN_PASSCODE = "1234";
 
         const INITIAL_VIDEOS = [
@@ -321,9 +332,12 @@
                 category: 'Entertainment',
                 thumbnail: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop',
                 views: 12450,
+                reactions: { like: 12, love: 25, haha: 5 },
                 date: '2026-03-15',
                 description: 'Classic open-source animated short movie for testing video streaming.',
-                comments: []
+                comments: [
+                    { id: 'c1', author: 'Aung Aung', text: 'ရှယ်ပဲဗျာ ကြည့်လို့ကောင်းတယ်!', likes: 3, date: '2026-03-16' }
+                ]
             }
         ];
 
@@ -345,7 +359,6 @@
             checkAdminHashAccess();
         });
 
-        // Auto User Identity Storage Setup
         function initUserIdentity() {
             let savedName = localStorage.getItem('myvideo_user_id');
             if (!savedName) {
@@ -384,7 +397,6 @@
             localStorage.setItem('myvideo_app_data', JSON.stringify(videos));
         }
 
-        // URL Hash Admin Access Handling
         function checkAdminHashAccess() {
             if (window.location.hash === '#admin') {
                 const pass = prompt("Admin Dashboard သို့ ဝင်ရောက်ရန် Password ရိုက်ထည့်ပါ- (Password: 1234)");
@@ -458,9 +470,11 @@
             }
 
             emptyState.classList.add('hidden');
-            grid.innerHTML = filtered.map(v => `
-                <div onclick="playVideo('${v.id}')" class="group cursor-pointer bg-gray-800 rounded-2xl overflow-hidden border border-gray-700/60 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
-                    <div class="relative aspect-video bg-gray-900 overflow-hidden">
+            grid.innerHTML = filtered.map(v => {
+                const reacts = v.reactions || { like: 0, love: 0, haha: 0 };
+                return `
+                <div class="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700/60 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
+                    <div onclick="playVideo('${v.id}')" class="relative aspect-video bg-gray-900 cursor-pointer overflow-hidden group">
                         <img src="${v.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop'}" alt="${v.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                             <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-lg shadow-lg">
@@ -471,18 +485,55 @@
                             ${v.category}
                         </span>
                     </div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 class="font-semibold text-sm line-clamp-2 text-gray-100 group-hover:text-red-400 transition">${v.title}</h4>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div onclick="playVideo('${v.id}')" class="cursor-pointer">
+                            <h4 class="font-semibold text-sm line-clamp-2 text-gray-100 hover:text-red-400 transition">${v.title}</h4>
                             <p class="text-xs text-gray-400 mt-1 line-clamp-2">${v.description || 'အသေးစိတ် မဖော်ပြထားပါ'}</p>
                         </div>
-                        <div class="flex items-center justify-between text-[11px] text-gray-400 mt-3 pt-3 border-t border-gray-700/50">
-                            <span><i class="fa-regular fa-eye mr-1"></i>${(v.views || 0).toLocaleString()}</span>
+                        
+                        <!-- VIDEO REACTIONS -->
+                        <div class="flex items-center justify-between text-xs bg-gray-900/50 p-2 rounded-xl border border-gray-700/50">
+                            <button onclick="reactVideo('${v.id}', 'like')" class="hover:bg-gray-700 px-2 py-1 rounded transition flex items-center gap-1 text-gray-300">
+                                👍 <span>${reacts.like || 0}</span>
+                            </button>
+                            <button onclick="reactVideo('${v.id}', 'love')" class="hover:bg-gray-700 px-2 py-1 rounded transition flex items-center gap-1 text-gray-300">
+                                ❤️ <span>${reacts.love || 0}</span>
+                            </button>
+                            <button onclick="reactVideo('${v.id}', 'haha')" class="hover:bg-gray-700 px-2 py-1 rounded transition flex items-center gap-1 text-gray-300">
+                                😆 <span>${reacts.haha || 0}</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-gray-700/50">
+                            <span><i class="fa-regular fa-eye mr-1"></i>${(v.views || 0).toLocaleString()} views</span>
                             <span><i class="fa-regular fa-comment mr-1"></i>${(v.comments || []).length}</span>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
+        }
+
+        // REACT TO VIDEO
+        function reactVideo(id, type) {
+            const video = videos.find(v => v.id === id);
+            if (video) {
+                if (!video.reactions) video.reactions = { like: 0, love: 0, haha: 0 };
+                video.reactions[type] = (video.reactions[type] || 0) + 1;
+                saveVideosToStorage();
+                renderUserVideos();
+            }
+        }
+
+        function reactVideoFromModal(type) {
+            const videoId = document.getElementById('active-comment-video-id').value;
+            reactVideo(videoId, type);
+            
+            const video = videos.find(v => v.id === videoId);
+            if (video) {
+                document.getElementById('modal-like-count').innerText = video.reactions.like || 0;
+                document.getElementById('modal-love-count').innerText = video.reactions.love || 0;
+                document.getElementById('modal-haha-count').innerText = video.reactions.haha || 0;
+            }
         }
 
         function playVideo(id) {
@@ -498,6 +549,11 @@
             document.getElementById('player-modal-views').innerText = `${video.views.toLocaleString()} views`;
             document.getElementById('player-modal-date').innerText = video.date;
             document.getElementById('player-modal-description').innerText = video.description || 'အသေးစိတ် မရှိပါ';
+
+            const reacts = video.reactions || { like: 0, love: 0, haha: 0 };
+            document.getElementById('modal-like-count').innerText = reacts.like || 0;
+            document.getElementById('modal-love-count').innerText = reacts.love || 0;
+            document.getElementById('modal-haha-count').innerText = reacts.haha || 0;
 
             const playerBody = document.getElementById('player-modal-body');
             
@@ -529,18 +585,35 @@
 
             container.innerHTML = comments.map(c => `
                 <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 flex justify-between items-start gap-3">
-                    <div class="space-y-1">
+                    <div class="space-y-1 flex-1">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-red-400">${c.author}</span>
                             <span class="text-[10px] text-gray-500">${c.date}</span>
                         </div>
                         <p class="text-xs text-gray-200 leading-relaxed">${c.text}</p>
                     </div>
+                    <button onclick="likeComment('${video.id}', '${c.id}')" class="flex items-center gap-1 text-[11px] bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded-lg text-gray-300 border border-gray-700 transition">
+                        <i class="fa-regular fa-thumbs-up text-red-400"></i>
+                        <span>${c.likes || 0}</span>
+                    </button>
                 </div>
             `).join('');
         }
 
-        // SUBMIT COMMENT WITH AUTO-SAVED IDENTITY
+        // LIKE A COMMENT
+        function likeComment(videoId, commentId) {
+            const video = videos.find(v => v.id === videoId);
+            if (video && video.comments) {
+                const comment = video.comments.find(c => c.id === commentId);
+                if (comment) {
+                    comment.likes = (comment.likes || 0) + 1;
+                    saveVideosToStorage();
+                    renderVideoComments(video);
+                }
+            }
+        }
+
+        // SUBMIT COMMENT WITH AUTO USER ID
         function submitComment(e) {
             e.preventDefault();
             const videoId = document.getElementById('active-comment-video-id').value;
@@ -556,6 +629,7 @@
                     id: Date.now().toString(),
                     author: currentUserId,
                     text: text,
+                    likes: 0,
                     date: new Date().toISOString().split('T')[0]
                 });
 
@@ -666,6 +740,7 @@
                     category,
                     thumbnail: thumbnail || `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop`,
                     views: 0,
+                    reactions: { like: 0, love: 0, haha: 0 },
                     date: new Date().toISOString().split('T')[0],
                     description,
                     comments: []
